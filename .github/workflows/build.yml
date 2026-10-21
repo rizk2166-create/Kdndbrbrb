@@ -9,7 +9,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # Tambahkan environment wajib agar Android SDK terbaca oleh Gradle
     env:
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
@@ -33,7 +32,6 @@ jobs:
           echo "Daftar isi repository awal:"
           ls -la
 
-          # Ekstrak file zip jika ada
           if [ -f "AimbotDemo.zip" ]; then
             echo "Mengekstrak AimbotDemo.zip..."
             unzip -q AimbotDemo.zip -d extracted_project
@@ -43,7 +41,6 @@ jobs:
             unzip -q "$ZIP_FILE" -d extracted_project
           fi
 
-          # Cari lokasi build.gradle atau settings.gradle
           TARGET_DIR=$(find . -maxdepth 5 \( -name "settings.gradle" -o -name "settings.gradle.kts" -o -name "build.gradle" \) -exec dirname {} \; | head -n 1)
 
           if [ -z "$TARGET_DIR" ]; then
@@ -65,6 +62,7 @@ jobs:
 
       - name: Build Debug APK
         working-directory: ${{ steps.setup_project.outputs.dir }}
+        id: build_step
         run: |
           ./gradlew assembleDebug --no-daemon --stacktrace
 
