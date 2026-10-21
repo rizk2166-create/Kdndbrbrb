@@ -62,13 +62,5 @@ jobs:
 
       - name: Build Debug APK
         working-directory: ${{ steps.setup_project.outputs.dir }}
-        id: build_step
         run: |
-          ./gradlew assembleDebug --no-daemon --stacktrace
-
-      - name: Upload Debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: AimbotDemo-debug-apk
-          path: ${{ steps.setup_project.outputs.dir }}/app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
+          ./gradlew assembleDebug --no-daemon --stacktrace --console=plain
