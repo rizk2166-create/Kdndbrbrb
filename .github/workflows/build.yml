@@ -1,0 +1,63 @@
+name: Build AimbotDemo APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Cari Folder Proyek & Siapkan Executable
+        id: setup_project
+        run: |
+          echo "Mencari file settings.gradle / build.gradle..."
+          if [ -f "settings.gradle" ] || [ -f "settings.gradle.kts" ] || [ -f "build.gradle" ]; then
+            TARGET_DIR="."
+          else
+            TARGET_DIR=$(find . -maxdepth 3 \( -name "settings.gradle" -o -name "settings.gradle.kts" -o -name "build.gradle" \) -exec dirname {} \; | head -n 1)
+          fi
+
+          if [ -z "$TARGET_DIR" ]; then
+            echo "Error: File proyek Android/Gradle tidak ditemukan!"
+            exit 1
+          fi
+
+          echo "Folder proyek ditemukan di: $TARGET_DIR"
+          echo "dir=$TARGET_DIR" >> $GITHUB_OUTPUT
+
+          cd "$TARGET_DIR"
+
+          # Buat gradlew otomatis jika tidak ada di dalam repository
+          if [ ! -f "gradlew" ]; then
+            echo "Membuat gradlew..."
+            gradle wrapper --gradle-version 8.5
+          fi
+
+          chmod +x gradlew
+
+      - name: Build Debug APK
+        working-directory: ${{ steps.setup_project.outputs.dir }}
+        run: |
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: AimbotDemo-debug-apk
+          path: ${{ steps.setup_project.outputs.dir }}/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
