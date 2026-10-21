@@ -22,18 +22,22 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Cari Folder Proyek & Siapkan Executable
+      - name: Cari Folder Proyek Otomatis (Deep Search)
         id: setup_project
         run: |
-          echo "Mencari file settings.gradle / build.gradle..."
+          echo "Daftar isi repository saat ini:"
+          ls -la
+
+          echo "Mencari lokasi settings.gradle atau build.gradle..."
           if [ -f "settings.gradle" ] || [ -f "settings.gradle.kts" ] || [ -f "build.gradle" ]; then
             TARGET_DIR="."
           else
-            TARGET_DIR=$(find . -maxdepth 3 \( -name "settings.gradle" -o -name "settings.gradle.kts" -o -name "build.gradle" \) -exec dirname {} \; | head -n 1)
+            # Mencari hingga kedalaman 5 folder
+            TARGET_DIR=$(find . -maxdepth 5 \( -name "settings.gradle" -o -name "settings.gradle.kts" -o -name "build.gradle" \) -exec dirname {} \; | head -n 1)
           fi
 
           if [ -z "$TARGET_DIR" ]; then
-            echo "Error: File proyek Android/Gradle tidak ditemukan!"
+            echo "Error: File proyek Android/Gradle benar-benar tidak ditemukan di repository!"
             exit 1
           fi
 
@@ -42,9 +46,8 @@ jobs:
 
           cd "$TARGET_DIR"
 
-          # Buat gradlew otomatis jika tidak ada di dalam repository
           if [ ! -f "gradlew" ]; then
-            echo "Membuat gradlew..."
+            echo "Membuat gradlew otomatis..."
             gradle wrapper --gradle-version 8.5
           fi
 
