@@ -9,6 +9,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # Tambahkan environment wajib agar Android SDK terbaca oleh Gradle
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -58,10 +63,10 @@ jobs:
 
           chmod +x gradlew
 
-      - name: Build Debug APK (With Stacktrace)
+      - name: Build Debug APK
         working-directory: ${{ steps.setup_project.outputs.dir }}
         run: |
-          ./gradlew assembleDebug --no-daemon --stacktrace --info
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
