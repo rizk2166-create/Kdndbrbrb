@@ -22,22 +22,30 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Cari Folder Proyek Otomatis (Deep Search)
+      - name: Ekstrak ZIP & Cari Folder Proyek
         id: setup_project
         run: |
-          echo "Daftar isi repository saat ini:"
+          echo "Daftar isi repository awal:"
           ls -la
 
-          echo "Mencari lokasi settings.gradle atau build.gradle..."
-          if [ -f "settings.gradle" ] || [ -f "settings.gradle.kts" ] || [ -f "build.gradle" ]; then
-            TARGET_DIR="."
-          else
-            # Mencari hingga kedalaman 5 folder
-            TARGET_DIR=$(find . -maxdepth 5 \( -name "settings.gradle" -o -name "settings.gradle.kts" -o -name "build.gradle" \) -exec dirname {} \; | head -n 1)
+          # Jika file ZIP ada, ekstrak secara otomatis
+          if [ -f "AimbotDemo.zip" ]; then
+            echo "Mengekstrak AimbotDemo.zip..."
+            unzip -q AimbotDemo.zip -d extracted_project
+          elif [ -f "*.zip" ]; then
+            ZIP_FILE=$(ls *.zip | head -n 1)
+            echo "Mengekstrak $ZIP_FILE..."
+            unzip -q "$ZIP_FILE" -d extracted_project
           fi
 
+          echo "Daftar isi setelah ekstrak:"
+          ls -la extracted_project || true
+
+          # Cari lokasi settings.gradle atau build.gradle setelah diekstrak
+          TARGET_DIR=$(find . -maxdepth 5 \( -name "settings.gradle" -o -name "settings.gradle.kts" -o -name "build.gradle" \) -exec dirname {} \; | head -n 1)
+
           if [ -z "$TARGET_DIR" ]; then
-            echo "Error: File proyek Android/Gradle benar-benar tidak ditemukan di repository!"
+            echo "Error: File proyek Android tetap tidak ditemukan setelah diekstrak!"
             exit 1
           fi
 
